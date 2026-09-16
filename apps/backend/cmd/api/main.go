@@ -39,6 +39,7 @@ func main() {
 	})
 
 	app.Use(httpx.RequestID)
+	app.Use(httpx.SecurityHeaders)
 	app.Use(httpx.AccessLog(logger))
 	httpx.RegisterHealthRoutes(app, db)
 
