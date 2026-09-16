@@ -26,7 +26,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: apps/backend/go.mod
-          cache-dependency-path: apps/backend/go.sum
-      - run: go mod download
+          cache: false
+      - run: go mod tidy
       - run: go vet ./...
       - run: go test -race ./...
