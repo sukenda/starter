@@ -9,6 +9,7 @@ import (
 
 var ErrUserNotFound = errors.New("user not found")
 var ErrSessionNotFound = errors.New("session not found")
+var ErrRefreshTokenReused = errors.New("refresh token already rotated")
 
 type User struct {
 	ID uint64
@@ -50,9 +51,9 @@ func (r *Repository) FindSessionByRefreshToken(ctx context.Context, hash [32]byt
 	return scanSession(r.db.QueryRowContext(ctx, `SELECT s.id,s.public_id,s.user_id,s.access_expires_at,s.refresh_expires_at,s.revoked_at,u.id,u.public_id,u.email,u.name,u.password_hash,u.status FROM auth_sessions s JOIN users u ON u.id=s.user_id WHERE s.refresh_token_hash=? LIMIT 1`, hash[:]))
 }
 
-func (r *Repository) RotateSession(ctx context.Context, id uint64, accessHash, refreshHash [32]byte, accessExpiry, refreshExpiry time.Time) error {
-	result, err := r.db.ExecContext(ctx, `UPDATE auth_sessions SET access_token_hash=?,refresh_token_hash=?,access_expires_at=?,refresh_expires_at=? WHERE id=? AND revoked_at IS NULL`, accessHash[:],refreshHash[:],accessExpiry,refreshExpiry,id)
-	if err != nil { return err }; n, err := result.RowsAffected(); if err != nil { return err }; if n != 1 { return ErrSessionNotFound }; return nil
+func (r *Repository) RotateSession(ctx context.Context, id uint64, previousRefreshHash, accessHash, refreshHash [32]byte, accessExpiry, refreshExpiry time.Time) error {
+	result, err := r.db.ExecContext(ctx, `UPDATE auth_sessions SET access_token_hash=?,refresh_token_hash=?,access_expires_at=?,refresh_expires_at=? WHERE id=? AND refresh_token_hash=? AND revoked_at IS NULL`, accessHash[:],refreshHash[:],accessExpiry,refreshExpiry,id,previousRefreshHash[:])
+	if err != nil { return err }; n, err := result.RowsAffected(); if err != nil { return err }; if n != 1 { return ErrRefreshTokenReused }; return nil
 }
 
 func (r *Repository) PermissionsForUser(ctx context.Context, userID uint64) ([]string, error) {
