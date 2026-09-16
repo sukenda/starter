@@ -1,0 +1,32 @@
+name: Backend CI
+
+on:
+  pull_request:
+    paths:
+      - 'apps/backend/**'
+      - 'packages/api-contract/**'
+      - '.github/workflows/backend.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/backend/**'
+      - 'packages/api-contract/**'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: apps/backend/go.mod
+          cache-dependency-path: apps/backend/go.sum
+      - run: go mod download
+      - run: go vet ./...
+      - run: go test -race ./...
