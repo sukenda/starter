@@ -29,8 +29,8 @@ func (s *Service) Login(ctx context.Context,email,password string)(User,Tokens,e
 }
 
 func (s *Service) Refresh(ctx context.Context,refreshToken string)(Tokens,error){
-	if refreshToken==""{return Tokens{},ErrUnauthorized}; session,user,err:=s.repo.FindSessionByRefreshToken(ctx,HashToken(refreshToken));if err!=nil{if errors.Is(err,ErrSessionNotFound){return Tokens{},ErrUnauthorized};return Tokens{},err};if session.RevokedAt.Valid||time.Now().UTC().After(session.RefreshExpiresAt)||user.Status!="active"{return Tokens{},ErrUnauthorized}
-	tokens,err:=s.issueTokens();if err!=nil{return Tokens{},err};if err:=s.repo.RotateSession(ctx,session.ID,HashToken(tokens.AccessToken),HashToken(tokens.RefreshToken),tokens.AccessExpiresAt,tokens.RefreshExpiresAt);err!=nil{return Tokens{},err};return tokens,nil
+	if refreshToken==""{return Tokens{},ErrUnauthorized}; previousHash:=HashToken(refreshToken);session,user,err:=s.repo.FindSessionByRefreshToken(ctx,previousHash);if err!=nil{if errors.Is(err,ErrSessionNotFound){return Tokens{},ErrUnauthorized};return Tokens{},err};if session.RevokedAt.Valid||time.Now().UTC().After(session.RefreshExpiresAt)||user.Status!="active"{return Tokens{},ErrUnauthorized}
+	tokens,err:=s.issueTokens();if err!=nil{return Tokens{},err};if err:=s.repo.RotateSession(ctx,session.ID,previousHash,HashToken(tokens.AccessToken),HashToken(tokens.RefreshToken),tokens.AccessExpiresAt,tokens.RefreshExpiresAt);err!=nil{if errors.Is(err,ErrRefreshTokenReused){return Tokens{},ErrUnauthorized};return Tokens{},err};return tokens,nil
 }
 
 func (s *Service) Authenticate(ctx context.Context,token string)(Principal,error){
