@@ -36,7 +36,7 @@ A foundation pull request remains draft until all applicable boxes are complete.
 - [x] Normalized API errors.
 - [x] Environment configuration.
 - [x] TanStack Query / Pinia responsibility documented.
-- [ ] Session boundary prepared without implementing auth UI.
+- [x] Session boundary prepared without implementing auth UI.
 
 ## Mobile runtime
 
@@ -44,6 +44,6 @@ A foundation pull request remains draft until all applicable boxes are complete.
 - [x] Dio transport boundary.
 - [x] Normalized API errors.
 - [x] Riverpod dependency boundary.
-- [ ] Secure-storage abstraction prepared without implementing auth UI.
+- [x] Secure-storage abstraction prepared without implementing auth UI.
 
 Authentication/RBAC and visual design-system implementation are explicitly out of scope for this PR.
