@@ -35,6 +35,7 @@ func main() {
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  60 * time.Second,
+		ErrorHandler: httpx.ErrorHandler,
 	})
 
 	httpx.RegisterHealthRoutes(app, db)
