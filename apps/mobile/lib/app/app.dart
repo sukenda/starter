@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:starter_mobile/app/router.dart';
+import 'package:starter_mobile/design_system/theme.dart';
 
 class StarterApp extends ConsumerWidget {
   const StarterApp({super.key});
@@ -11,10 +12,7 @@ class StarterApp extends ConsumerWidget {
       title: 'Starter',
       debugShowCheckedModeBanner: false,
       routerConfig: ref.watch(routerProvider),
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
-      ),
+      theme: StarterTheme.light,
     );
   }
 }
