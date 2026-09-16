@@ -12,6 +12,7 @@ import (
 
 	"github.com/sukenda/starter/apps/backend/internal/config"
 	"github.com/sukenda/starter/apps/backend/internal/database"
+	"github.com/sukenda/starter/apps/backend/internal/httpx"
 )
 
 func main() {
@@ -34,16 +35,13 @@ func main() {
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  60 * time.Second,
+		ErrorHandler: httpx.ErrorHandler,
 	})
 
-	app.Get("/health", func(c fiber.Ctx) error {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-		defer cancel()
-		if err := db.PingContext(ctx); err != nil {
-			return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"status": "degraded"})
-		}
-		return c.JSON(fiber.Map{"status": "ok"})
-	})
+	app.Use(httpx.RequestID)
+	app.Use(httpx.SecurityHeaders)
+	app.Use(httpx.AccessLog(logger))
+	httpx.RegisterHealthRoutes(app, db)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
