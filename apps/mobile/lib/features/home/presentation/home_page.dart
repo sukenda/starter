@@ -11,7 +11,10 @@ class HomePage extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Fullstack Starter', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600)),
+              Text(
+                'Fullstack Starter',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+              ),
               SizedBox(height: 8),
               Text('Flutter application is ready for feature development.'),
             ],
