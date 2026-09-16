@@ -8,19 +8,40 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
+
+	"github.com/sukenda/starter/apps/backend/internal/config"
+	"github.com/sukenda/starter/apps/backend/internal/database"
 )
 
 func main() {
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+	cfg, err := config.Load()
+	if err != nil {
+		logger.Error("failed to load configuration", "error", err)
+		os.Exit(1)
+	}
+
+	db, err := database.Open(cfg.Database)
+	if err != nil {
+		logger.Error("failed to connect to database", "error", err)
+		os.Exit(1)
+	}
+	defer db.Close()
+
 	app := fiber.New(fiber.Config{
-		AppName:      "starter-api",
+		AppName:      cfg.AppName,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  60 * time.Second,
 	})
 
-	app.Get("/health", func(c *fiber.Ctx) error {
+	app.Get("/health", func(c fiber.Ctx) error {
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+		if err := db.PingContext(ctx); err != nil {
+			return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"status": "degraded"})
+		}
 		return c.JSON(fiber.Map{"status": "ok"})
 	})
 
@@ -31,14 +52,13 @@ func main() {
 		<-ctx.Done()
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-
 		if err := app.ShutdownWithContext(shutdownCtx); err != nil {
 			logger.Error("failed to gracefully shutdown server", "error", err)
 		}
 	}()
 
-	logger.Info("starting HTTP server", "address", ":8080")
-	if err := app.Listen(":8080"); err != nil && ctx.Err() == nil {
+	logger.Info("starting HTTP server", "address", cfg.HTTPAddress)
+	if err := app.Listen(cfg.HTTPAddress); err != nil && ctx.Err() == nil {
 		logger.Error("HTTP server stopped unexpectedly", "error", err)
 		os.Exit(1)
 	}
