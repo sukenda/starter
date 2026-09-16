@@ -38,6 +38,7 @@ func main() {
 		ErrorHandler: httpx.ErrorHandler,
 	})
 
+	app.Use(httpx.RequestID)
 	httpx.RegisterHealthRoutes(app, db)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
