@@ -1,49 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:starter_mobile/design_system/tokens.dart';
 import 'package:starter_mobile/features/auth/application/auth_controller.dart';
 
-class HomePage extends ConsumerWidget {
-  const HomePage({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(authControllerProvider).value;
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Starter'),
-        actions: [
-          IconButton(
-            tooltip: 'Sign out',
-            onPressed: () => ref.read(authControllerProvider.notifier).logout(),
-            icon: const Icon(Icons.logout),
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Welcome, ${user?.name ?? ''}', style: Theme.of(context).textTheme.headlineMedium),
-              const SizedBox(height: 8),
-              Text(user?.email ?? ''),
-              const SizedBox(height: 32),
-              const Card(
-                child: Padding(
-                  padding: EdgeInsets.all(20),
-                  child: ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Icon(Icons.home_outlined),
-                    title: Text('Home'),
-                    subtitle: Text('Your authenticated mobile workspace is ready for product features.'),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
+class HomePage extends ConsumerWidget { const HomePage({super.key}); @override Widget build(BuildContext context,WidgetRef ref){final user=ref.watch(authControllerProvider).value;final text=Theme.of(context).textTheme;return Scaffold(appBar:AppBar(title:const Text('Starter'),backgroundColor:DsColors.surface,surfaceTintColor:Colors.transparent,actions:[IconButton(tooltip:'Sign out',onPressed:()=>ref.read(authControllerProvider.notifier).logout(),icon:const Icon(Icons.logout_outlined))]),body:SafeArea(child:ListView(padding:const EdgeInsets.all(DsSpace.lg),children:[Text('HOME',style:text.labelSmall?.copyWith(color:DsColors.brand,fontWeight:FontWeight.w700,letterSpacing:1.2)),const SizedBox(height:DsSpace.sm),Text('Welcome, ${user?.name??''}',style:text.headlineMedium?.copyWith(fontWeight:FontWeight.w700)),const SizedBox(height:DsSpace.xs),Text(user?.email??'',style:text.bodyMedium?.copyWith(color:DsColors.textSecondary)),const SizedBox(height:DsSpace.xl),Card(child:Padding(padding:const EdgeInsets.all(DsSpace.lg),child:Row(crossAxisAlignment:CrossAxisAlignment.start,children:[Container(width:44,height:44,decoration:BoxDecoration(color:DsColors.surfaceSubtle,borderRadius:BorderRadius.circular(DsRadius.md)),child:const Icon(Icons.home_outlined,color:DsColors.brand)),const SizedBox(width:DsSpace.md),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('Workspace ready',style:text.titleMedium?.copyWith(fontWeight:FontWeight.w600)),const SizedBox(height:DsSpace.xs),Text('Your authenticated mobile foundation is ready for product features.',style:text.bodyMedium?.copyWith(color:DsColors.textSecondary))]))])))])));}}
