@@ -1,5 +1,8 @@
 module github.com/sukenda/starter/apps/backend
 
-go 1.25
+go 1.27.1
 
-require github.com/gofiber/fiber/v2 v2.52.9
+require (
+	github.com/go-sql-driver/mysql v1.9.3
+	github.com/gofiber/fiber/v3 v3.0.0
+)
