@@ -1,7 +1,6 @@
 package database
 
 import (
-	"context"
 	"database/sql"
 	"testing"
 )
@@ -14,7 +13,7 @@ func TestReadyRejectsClosedDatabase(t *testing.T) {
 	if err := db.Close(); err != nil {
 		t.Fatalf("close database handle: %v", err)
 	}
-	if err := Ready(context.Background(), db); err == nil {
+	if err := Ready(db); err == nil {
 		t.Fatal("expected readiness check to fail for a closed database")
 	}
 }
