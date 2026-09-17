@@ -6,7 +6,8 @@ final tokenStorageProvider = Provider<TokenStorage>((ref) => TokenStorage());
 
 class TokenStorage {
   TokenStorage({FlutterSecureStorage? storage})
-      : _storage = storage ?? const FlutterSecureStorage();
+    : _storage = storage ?? const FlutterSecureStorage();
+
   final FlutterSecureStorage _storage;
   static const _accessKey = 'auth_access_token';
   static const _refreshKey = 'auth_refresh_token';
