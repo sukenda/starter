@@ -28,7 +28,9 @@ class AuthRepository {
       data: {'email': email, 'password': password, 'client': 'mobile'},
     );
     final data = response.data!['data'] as Map<String, dynamic>;
-    final tokens = SessionTokens.fromJson(data['tokens'] as Map<String, dynamic>);
+    final tokens = SessionTokens.fromJson(
+      data['tokens'] as Map<String, dynamic>,
+    );
     await _storage.save(tokens);
     return SessionUser.fromJson(data['user'] as Map<String, dynamic>);
   }
@@ -77,7 +79,8 @@ class AuthRepository {
       await _storage.save(tokens);
       return tokens;
     } on DioException catch (error) {
-      if (error.response?.statusCode == 400 || error.response?.statusCode == 401) {
+      if (error.response?.statusCode == 400 ||
+          error.response?.statusCode == 401) {
         await _storage.clear();
         return null;
       }
