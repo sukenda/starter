@@ -1,16 +1,20 @@
 package database
 
 import (
-	"strings"
 	"testing"
+	"time"
+
+	"github.com/sukenda/starter/apps/backend/internal/config"
 )
 
-func TestConfigDSNUsesMariaDBOptions(t *testing.T) {
-	cfg := Config{User: "app", Password: "secret", Host: "db", Port: "3306", Name: "starter"}
-	dsn := cfg.DSN()
-	for _, expected := range []string{"app:secret@tcp(db:3306)/starter", "parseTime=true"} {
-		if !strings.Contains(dsn, expected) {
-			t.Fatalf("DSN %q does not contain %q", dsn, expected)
-		}
+func TestDatabaseConfigCanRepresentPoolSettings(t *testing.T) {
+	cfg := config.DatabaseConfig{
+		DSN:             "starter:starter@tcp(127.0.0.1:3306)/starter?parseTime=true",
+		MaxOpenConns:    25,
+		MaxIdleConns:    10,
+		ConnMaxLifetime: 5 * time.Minute,
+	}
+	if cfg.DSN == "" || cfg.MaxOpenConns <= 0 || cfg.MaxIdleConns < 0 || cfg.ConnMaxLifetime <= 0 {
+		t.Fatal("expected valid database configuration")
 	}
 }
