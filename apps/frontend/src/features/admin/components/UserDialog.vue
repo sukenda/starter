@@ -24,13 +24,9 @@ function toggle(code: string) {
   f.roles = f.roles.includes(code) ? f.roles.filter((value) => value !== code) : [...f.roles, code]
 }
 function save() {
-  emit('save', {
-    email: f.email,
-    name: f.name,
-    password: p.user ? undefined : f.password,
-    status: f.status,
-    roles: [...f.roles],
-  })
+  const input: UserInput = { email: f.email, name: f.name, status: f.status, roles: [...f.roles] }
+  if (!p.user) input.password = f.password
+  emit('save', input)
 }
 </script>
 <template>
