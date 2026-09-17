@@ -6,15 +6,17 @@ import 'package:starter_mobile/core/network/api_client.dart';
 import 'package:starter_mobile/features/auth/data/token_storage.dart';
 import 'package:starter_mobile/features/auth/domain/session.dart';
 
-final authRepositoryProvider = Provider<AuthRepository>((ref) => AuthRepository(
-      dio: ref.watch(dioProvider),
-      storage: ref.watch(tokenStorageProvider),
-    ));
+final authRepositoryProvider = Provider<AuthRepository>(
+  (ref) => AuthRepository(
+    dio: ref.watch(dioProvider),
+    storage: ref.watch(tokenStorageProvider),
+  ),
+);
 
 class AuthRepository {
   AuthRepository({required Dio dio, required TokenStorage storage})
-      : _dio = dio,
-        _storage = storage;
+    : _dio = dio,
+      _storage = storage;
 
   final Dio _dio;
   final TokenStorage _storage;
