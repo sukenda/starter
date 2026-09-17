@@ -14,9 +14,11 @@ import (
 )
 
 const (
-	principalLocal = "auth.principal"
-	refreshCookie  = "starter_refresh"
-	csrfCookie     = "starter_csrf"
+	principalLocal    = "auth.principal"
+	refreshCookie     = "starter_refresh"
+	csrfCookie        = "starter_csrf"
+	refreshCookiePath = "/api/v1/auth"
+	csrfCookiePath    = "/"
 )
 
 type Handler struct {
@@ -69,13 +71,13 @@ func (h *Handler) setWebCookies(c fiber.Ctx, t Tokens) error {
 		return err
 	}
 	maxAge := int(time.Until(t.RefreshExpiresAt).Seconds())
-	c.Cookie(&fiber.Cookie{Name: refreshCookie, Value: t.RefreshToken, Path: "/api/v1/auth", HTTPOnly: true, Secure: h.secureCookies, SameSite: "Lax", MaxAge: maxAge})
-	c.Cookie(&fiber.Cookie{Name: csrfCookie, Value: csrf, Path: "/api/v1/auth", HTTPOnly: false, Secure: h.secureCookies, SameSite: "Lax", MaxAge: maxAge})
+	c.Cookie(&fiber.Cookie{Name: refreshCookie, Value: t.RefreshToken, Path: refreshCookiePath, HTTPOnly: true, Secure: h.secureCookies, SameSite: "Lax", MaxAge: maxAge})
+	c.Cookie(&fiber.Cookie{Name: csrfCookie, Value: csrf, Path: csrfCookiePath, HTTPOnly: false, Secure: h.secureCookies, SameSite: "Lax", MaxAge: maxAge})
 	return nil
 }
 func (h *Handler) clearWebCookies(c fiber.Ctx) {
-	c.Cookie(&fiber.Cookie{Name: refreshCookie, Value: "", Path: "/api/v1/auth", HTTPOnly: true, Secure: h.secureCookies, SameSite: "Lax", MaxAge: -1})
-	c.Cookie(&fiber.Cookie{Name: csrfCookie, Value: "", Path: "/api/v1/auth", HTTPOnly: false, Secure: h.secureCookies, SameSite: "Lax", MaxAge: -1})
+	c.Cookie(&fiber.Cookie{Name: refreshCookie, Value: "", Path: refreshCookiePath, HTTPOnly: true, Secure: h.secureCookies, SameSite: "Lax", MaxAge: -1})
+	c.Cookie(&fiber.Cookie{Name: csrfCookie, Value: "", Path: csrfCookiePath, HTTPOnly: false, Secure: h.secureCookies, SameSite: "Lax", MaxAge: -1})
 }
 func validCSRF(c fiber.Ctx) bool {
 	cookie, header := c.Cookies(csrfCookie), c.Get("X-CSRF-Token")
