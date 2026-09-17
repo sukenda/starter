@@ -35,7 +35,9 @@ Do not force all three layers for trivial features.
 ## Rules
 
 - Widgets render state and emit user intent; keep networking/business logic out of widgets.
-- Access remote APIs through repositories/data sources using the shared Dio client.
+- Access remote APIs through repositories/data sources using the shared Dio clients.
+- Use `dioProvider` for public/auth transport and `authenticatedDioProvider` for protected application APIs.
+- Do not manually attach bearer tokens or implement per-feature refresh/retry logic; the authenticated client owns that boundary.
 - Use Riverpod for dependency injection and application state.
 - Use GoRouter for navigation and route guards/redirects.
 - Model loading, data, empty, and error states explicitly.
@@ -48,6 +50,8 @@ Do not force all three layers for trivial features.
 ## API
 
 HTTP behavior must match `/packages/api-contract/openapi.yaml`. Normalize transport failures into application-level failures before presentation code handles them.
+
+Protected requests must use `authenticatedDioProvider`. It attaches the current access token, performs at most one refresh-and-retry after a 401, and relies on `AuthRepository` to serialize refresh rotation. Authentication endpoints stay on the base `dioProvider` so refresh requests cannot recursively trigger refresh handling.
 
 ## Testing
 
