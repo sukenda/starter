@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:starter_mobile/core/network/api_client.dart';
@@ -13,13 +15,15 @@ class AuthRepository {
   AuthRepository({required Dio dio, required TokenStorage storage})
       : _dio = dio,
         _storage = storage;
+
   final Dio _dio;
   final TokenStorage _storage;
+  Future<SessionTokens?>? _refreshInFlight;
 
   Future<SessionUser> login(String email, String password) async {
     final response = await _dio.post<Map<String, dynamic>>(
       '/api/v1/auth/login',
-      data: {'email': email, 'password': password},
+      data: {'email': email, 'password': password, 'client': 'mobile'},
     );
     final data = response.data!['data'] as Map<String, dynamic>;
     final tokens = SessionTokens.fromJson(data['tokens'] as Map<String, dynamic>);
@@ -28,13 +32,54 @@ class AuthRepository {
   }
 
   Future<SessionUser?> restore() async {
-    final accessToken = await _storage.readAccessToken();
-    if (accessToken == null) return null;
+    var accessToken = await _storage.readAccessToken();
+    if (accessToken == null) {
+      final refreshed = await refresh();
+      accessToken = refreshed?.accessToken;
+      if (accessToken == null) return null;
+    }
+
     try {
       return await me(accessToken);
-    } on DioException {
-      await _storage.clear();
-      return null;
+    } on DioException catch (error) {
+      if (error.response?.statusCode != 401) rethrow;
+      final refreshed = await refresh();
+      if (refreshed == null) return null;
+      try {
+        return await me(refreshed.accessToken);
+      } on DioException {
+        await _storage.clear();
+        return null;
+      }
+    }
+  }
+
+  Future<SessionTokens?> refresh() {
+    final existing = _refreshInFlight;
+    if (existing != null) return existing;
+    final operation = _performRefresh();
+    _refreshInFlight = operation;
+    return operation.whenComplete(() => _refreshInFlight = null);
+  }
+
+  Future<SessionTokens?> _performRefresh() async {
+    final refreshToken = await _storage.readRefreshToken();
+    if (refreshToken == null) return null;
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/api/v1/auth/refresh',
+        data: {'refresh_token': refreshToken},
+      );
+      final data = response.data!['data'] as Map<String, dynamic>;
+      final tokens = SessionTokens.fromJson(data);
+      await _storage.save(tokens);
+      return tokens;
+    } on DioException catch (error) {
+      if (error.response?.statusCode == 400 || error.response?.statusCode == 401) {
+        await _storage.clear();
+        return null;
+      }
+      rethrow;
     }
   }
 
@@ -51,8 +96,10 @@ class AuthRepository {
     final accessToken = await _storage.readAccessToken();
     if (accessToken != null) {
       try {
-        await _dio.post<void>('/api/v1/auth/logout',
-            options: Options(headers: {'Authorization': 'Bearer $accessToken'}));
+        await _dio.post<void>(
+          '/api/v1/auth/logout',
+          options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
+        );
       } on DioException {
         // Local credentials must still be removed when the network is unavailable.
       }
