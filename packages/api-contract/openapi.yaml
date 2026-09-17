@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Starter API
-  version: 0.2.0
+  version: 0.3.0
   description: Canonical HTTP contract shared by backend, frontend, and mobile.
 servers:
   - url: http://localhost:8080
@@ -23,6 +23,7 @@ paths:
     post:
       operationId: login
       tags: [Auth]
+      description: Web clients set client=web and receive the refresh credential in an HttpOnly cookie. Native clients receive it in JSON.
       requestBody:
         required: true
         content:
@@ -39,18 +40,27 @@ paths:
     post:
       operationId: refreshSession
       tags: [Auth]
+      description: Native clients send refresh_token in JSON. Browser clients send the HttpOnly refresh cookie and a matching X-CSRF-Token header; refresh_token may be omitted from JSON.
+      parameters:
+        - in: header
+          name: X-CSRF-Token
+          required: false
+          description: Required when refreshing a browser cookie-backed session.
+          schema: { type: string }
       requestBody:
-        required: true
+        required: false
         content:
           application/json:
             schema: { $ref: '#/components/schemas/RefreshRequest' }
       responses:
         '200':
-          description: Rotated session tokens
+          description: Rotated session credentials. Browser responses omit refresh_token from JSON and rotate cookies instead.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/TokenEnvelope' }
+        '400': { description: No refresh credential was supplied }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { description: Browser CSRF validation failed }
   /api/v1/auth/me:
     get:
       operationId: getCurrentUser
@@ -69,7 +79,7 @@ paths:
       tags: [Auth]
       security: [{ bearerAuth: [] }]
       responses:
-        '200': { description: Session revoked }
+        '200': { description: Session revoked; browser session cookies are cleared }
         '401': { $ref: '#/components/responses/Unauthorized' }
 components:
   securitySchemes:
@@ -83,11 +93,16 @@ components:
       properties:
         email: { type: string, format: email }
         password: { type: string, minLength: 1 }
+        client:
+          type: string
+          enum: [web, mobile]
+          description: Selects browser cookie or native JSON refresh-token transport. Omitted values use native JSON transport for backward compatibility.
     RefreshRequest:
       type: object
-      required: [refresh_token]
       properties:
-        refresh_token: { type: string }
+        refresh_token:
+          type: string
+          description: Required for native refresh and omitted for browser cookie-backed refresh.
     User:
       type: object
       required: [id, name, email]
@@ -100,10 +115,12 @@ components:
           items: { type: string }
     Tokens:
       type: object
-      required: [access_token, refresh_token, token_type, access_expires_at, refresh_expires_at]
+      required: [access_token, token_type, access_expires_at, refresh_expires_at]
       properties:
         access_token: { type: string }
-        refresh_token: { type: string }
+        refresh_token:
+          type: string
+          description: Present for native sessions and omitted from browser responses.
         token_type: { type: string, const: Bearer }
         access_expires_at: { type: string, format: date-time }
         refresh_expires_at: { type: string, format: date-time }
