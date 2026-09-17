@@ -8,8 +8,8 @@ export interface ApiErrorPayload {
 export class ApiError extends Error {
   readonly code: string
   readonly status: number
-  readonly requestId?: string
-  readonly details?: unknown
+  readonly requestId: string | undefined
+  readonly details: unknown
 
   constructor(status: number, payload: ApiErrorPayload) {
     super(payload.message)
