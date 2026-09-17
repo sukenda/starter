@@ -39,9 +39,7 @@ class HomePage extends ConsumerWidget {
             const SizedBox(height: DsSpace.sm),
             Text(
               'Welcome, ${user?.name ?? ''}',
-              style: text.headlineMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+              style: text.headlineMedium?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: DsSpace.xs),
             Text(

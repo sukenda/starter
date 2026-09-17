@@ -2,9 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:starter_mobile/features/auth/data/auth_repository.dart';
 import 'package:starter_mobile/features/auth/domain/session.dart';
 
-final authControllerProvider = AsyncNotifierProvider<AuthController, SessionUser?>(
-  AuthController.new,
-);
+final authControllerProvider =
+    AsyncNotifierProvider<AuthController, SessionUser?>(AuthController.new);
 
 class AuthController extends AsyncNotifier<SessionUser?> {
   @override
