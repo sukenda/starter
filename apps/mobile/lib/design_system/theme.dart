@@ -3,14 +3,15 @@ import 'package:starter_mobile/design_system/tokens.dart';
 
 abstract final class StarterTheme {
   static ThemeData get light {
-    final scheme = ColorScheme.fromSeed(
-      seedColor: DsColors.brand,
-      brightness: Brightness.light,
-    ).copyWith(
-      primary: DsColors.brand,
-      surface: DsColors.surface,
-      error: DsColors.danger,
-    );
+    final scheme =
+        ColorScheme.fromSeed(
+          seedColor: DsColors.brand,
+          brightness: Brightness.light,
+        ).copyWith(
+          primary: DsColors.brand,
+          surface: DsColors.surface,
+          error: DsColors.danger,
+        );
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
