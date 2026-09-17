@@ -15,6 +15,7 @@ func TestValidateRejectsInvalidPool(t *testing.T) {
 			MaxIdleConns:    6,
 			ConnMaxLifetime: time.Minute,
 		},
+		Auth: AuthConfig{AccessTTL: 15 * time.Minute, RefreshTTL: 30 * 24 * time.Hour},
 	}
 
 	if err := cfg.Validate(); err == nil {
@@ -32,6 +33,7 @@ func TestValidateAcceptsSaneConfiguration(t *testing.T) {
 			MaxIdleConns:    10,
 			ConnMaxLifetime: 5 * time.Minute,
 		},
+		Auth: AuthConfig{AccessTTL: 15 * time.Minute, RefreshTTL: 30 * 24 * time.Hour},
 	}
 
 	if err := cfg.Validate(); err != nil {
