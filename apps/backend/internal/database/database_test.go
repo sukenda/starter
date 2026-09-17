@@ -1,9 +1,16 @@
 package database
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
-func TestPackageProvidesDatabaseBoundary(t *testing.T) {
-	if Open == nil {
-		t.Fatal("expected database open function")
+func TestConfigDSNUsesMariaDBOptions(t *testing.T) {
+	cfg := Config{User: "app", Password: "secret", Host: "db", Port: "3306", Name: "starter"}
+	dsn := cfg.DSN()
+	for _, expected := range []string{"app:secret@tcp(db:3306)/starter", "parseTime=true"} {
+		if !strings.Contains(dsn, expected) {
+			t.Fatalf("DSN %q does not contain %q", dsn, expected)
+		}
 	}
 }
